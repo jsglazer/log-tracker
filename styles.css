@@ -1,0 +1,12 @@
+.log-tracker-preview {
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.6;
+	white-space: pre-wrap;
+	word-break: break-word;
+	text-align: left;
+}
+
+.log-tracker-preview-error {
+	color: var(--text-error);
+}

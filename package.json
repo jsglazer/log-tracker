@@ -1,0 +1,27 @@
+{
+	"name": "log-tracker",
+	"version": "1.0.0",
+	"description": "Timestamped log bullets for Obsidian, with elapsed time since the previous stamp.",
+	"main": "main.js",
+	"scripts": {
+		"dev": "node esbuild.config.mjs",
+		"build": "tsc --noEmit -p tsconfig.json && node esbuild.config.mjs production",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"keywords": ["obsidian", "plugin", "timestamp", "logging"],
+	"author": "Josh Glazer",
+	"license": "MIT",
+	"dependencies": {
+		"dayjs": "^1.11.13"
+	},
+	"devDependencies": {
+		"@codemirror/state": "6.5.0",
+		"@types/node": "^25.9.3",
+		"esbuild": "0.28.1",
+		"obsidian": "latest",
+		"tslib": "2.8.1",
+		"typescript": "^6.0.3",
+		"vitest": "^4.1.8"
+	}
+}

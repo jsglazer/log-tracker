@@ -1,0 +1,10 @@
+{
+	"id": "log-tracker",
+	"name": "Log Tracker",
+	"version": "1.0.0",
+	"minAppVersion": "1.5.12",
+	"description": "Expand a trigger keyword into a timestamped bullet, stamped with the elapsed time since the previous timestamped bullet.",
+	"author": "Josh Glazer",
+	"authorUrl": "https://github.com/jsglazer",
+	"isDesktopOnly": false
+}
