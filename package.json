@@ -1,6 +1,6 @@
 {
 	"name": "log-tracker",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Timestamped log bullets for Obsidian, with elapsed time since the previous stamp.",
 	"main": "main.js",
 	"scripts": {

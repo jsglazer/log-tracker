@@ -101,6 +101,19 @@ describe("Enter continuation", () => {
 		);
 	});
 
+	it("absorbs the desktop editor's real shape, which replays the last character of the line", () => {
+		// `newlineAndIndentContinueMarkdownList` replaces the line's last character
+		// with itself plus the newline and marker, rather than appending after it.
+		const state = stateWith(LINE, LINE.length);
+		const lastChar = LINE.charAt(LINE.length - 1);
+		const next = state.update({
+			changes: { from: LINE.length - 1, to: LINE.length, insert: lastChar + "\n- " },
+		}).state;
+		expect(next.doc.toString()).toBe(
+			LINE + "\n- [2026-09-07 - 09:42:26 (00:20:22)] ",
+		);
+	});
+
 	it("handles the other list markers a continuation can open with", () => {
 		// CodeMirror rejects a bare "\r" in document text, so the CRLF shape is
 		// covered by the CONTINUATION unit test below rather than by a dispatch.

@@ -1074,7 +1074,12 @@ function expandTrigger(tr, change, grammar, now) {
   };
 }
 function continueList(tr, change, grammar, now) {
-  if (!CONTINUATION.test(change.inserted)) {
+  const replayed = tr.startState.doc.sliceString(change.fromA, change.toA);
+  if (!change.inserted.startsWith(replayed)) {
+    return null;
+  }
+  const tail = change.inserted.slice(replayed.length);
+  if (!CONTINUATION.test(tail)) {
     return null;
   }
   const line = tr.startState.doc.lineAt(change.fromA);
@@ -1082,7 +1087,7 @@ function continueList(tr, change, grammar, now) {
   if (parsed === null || parsed.rest.trim() === "") {
     return null;
   }
-  const insert = change.inserted.replace(/[ \t]*$/, "") + " " + renderStamp(now, parsed.timestamp, grammar) + " ";
+  const insert = replayed + tail.replace(/[ \t]*$/, "") + " " + renderStamp(now, parsed.timestamp, grammar) + " ";
   return {
     changes: { from: change.fromA, to: change.toA, insert },
     selection: { anchor: change.fromA + insert.length },

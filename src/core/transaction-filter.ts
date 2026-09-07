@@ -19,10 +19,11 @@ import { findPreviousTimestamp } from "./scan";
 /**
  * A newline followed by a list marker, with optional whitespace on either side.
  *
- * Deliberately generalized rather than a literal `"\n- "` test: a mobile
- * virtual keyboard commits Enter as a composite insertion such as `" \n- "`,
- * with a leading space belonging to the line being left. Matching the shape
- * instead of the exact two characters absorbs those variants.
+ * Deliberately generalized rather than a literal `"\n- "` test: this is tested
+ * against the tail of the change after `continueList` strips off any character
+ * the change replays from the line being left (see there for why desktop and a
+ * mobile virtual keyboard both produce that leading character), so the leading
+ * `[ \t]*` only needs to absorb whatever of that replayed text is whitespace.
  */
 export const CONTINUATION = /^[ \t]*\r?\n[ \t]*(?:[-*+]|\d+[.)])[ \t]*$/;
 
@@ -121,6 +122,19 @@ function expandTrigger(
  * Enter at the end of a stamped bullet continues the log with a fresh stamp,
  * measured against the line just left.
  *
+ * Obsidian's desktop list continuation does not insert a clean newline plus
+ * marker: `newlineAndIndentContinueMarkdownList` replaces the single character
+ * just before the cursor with that same character followed by the newline and
+ * marker (e.g. the "m" of "item" becomes "m\n- "), so the standard undo/CM6
+ * diffing machinery sees a minimal replace rather than an append. `change.inserted`
+ * therefore carries that replayed character as a prefix on desktop, and the change
+ * range (`fromA`..`toA`) covers it rather than sitting at the cursor. The mobile
+ * composite insertion described below is the same shape with a space as the
+ * replayed character. Stripping exactly the text the change already deletes from
+ * the front of `inserted` before testing `CONTINUATION` handles both, and the
+ * ordinary programmatic case (a pure insert, nothing deleted) falls out for free
+ * since the stripped prefix is then empty.
+ *
  * An empty bullet is left entirely alone: the editor's own outdent-and-exit
  * behaviour applies, and no stamp is inserted into a line the user is trying to
  * get out of.
@@ -131,7 +145,12 @@ function continueList(
 	grammar: Grammar,
 	now: number,
 ): TransactionSpec | null {
-	if (!CONTINUATION.test(change.inserted)) {
+	const replayed = tr.startState.doc.sliceString(change.fromA, change.toA);
+	if (!change.inserted.startsWith(replayed)) {
+		return null;
+	}
+	const tail = change.inserted.slice(replayed.length);
+	if (!CONTINUATION.test(tail)) {
 		return null;
 	}
 	const line = tr.startState.doc.lineAt(change.fromA);
@@ -141,7 +160,7 @@ function continueList(
 	}
 
 	const insert =
-		change.inserted.replace(/[ \t]*$/, "") + " " + renderStamp(now, parsed.timestamp, grammar) + " ";
+		replayed + tail.replace(/[ \t]*$/, "") + " " + renderStamp(now, parsed.timestamp, grammar) + " ";
 	return {
 		changes: { from: change.fromA, to: change.toA, insert },
 		selection: { anchor: change.fromA + insert.length },
